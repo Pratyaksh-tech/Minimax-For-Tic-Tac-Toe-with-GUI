@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import time
 
 def spaceIsFree(position):
 	if board[position] == ' ':
@@ -18,17 +19,22 @@ def reset(whowin):
 		board[i] = ' '
 	if whowin == 1:
 		Bot_score += 1;
-	if whowin == 2:
+	elif whowin == 2:
 		player_score += 1;
-	if whowin == 0:
-		isdraw += 1	
+	elif whowin == 0:
+		isdraw += 1
+		title_d['text'] = f"Draws : {isdraw}"
 	title_label['text'] = f"{player_score} : {Bot_score}"
-	title_d['text'] = f"Draws : {isdraw}"
 	if myturn:
 		compMove()
 		myturn = False
 	else:
 		myturn = True
+
+def setcolor(lst, color):
+	for key in board.keys():
+		if key in lst:
+			buttons[key]['bg'] = color;
 
 def insertLetter(letter, position):
 	global searches
@@ -38,22 +44,27 @@ def insertLetter(letter, position):
 
 		if letter == bot:
 			print(f"No. of moves Bot searches ahead are {searches}\n")
+			searches = 0
 
 		if checkDraw():
 			print("Draw!")
 			messagebox.showinfo("Game Over", "It's a Draw!")
 			reset(0);
 			return
-
-		if checkForWin():
+		state = checkForWin();
+		if state != []:
 			if letter == 'X':
+				setcolor(state, "lightgreen")
 				print("Bot wins!")
 				messagebox.showinfo("Game Over", "Bot wins!")
 				reset(1)
+				setcolor(state, "SystemButtonFace")
 			else:
+				setcolor(state, "lightgreen")
 				print("Player wins!")
 				messagebox.showinfo("Game Over", "Player wins!")
 				reset(2)
+				setcolor(state, "SystemButtonFace")
 			return
 	else:
 		print("Can't insert there!")
@@ -63,23 +74,23 @@ def insertLetter(letter, position):
 
 def checkForWin():
 	if (board[1] == board[2] and board[1] == board[3] and board[1] != ' '):
-		return True
+		return [1, 2, 3]
 	elif (board[4] == board[5] and board[4] == board[6] and board[4] != ' '):
-		return True
+		return [4, 5, 6]
 	elif (board[7] == board[8] and board[7] == board[9] and board[7] != ' '):
-		return True
+		return [7, 8, 9]
 	elif (board[1] == board[4] and board[1] == board[7] and board[1] != ' '):
-		return True
+		return [1, 4, 7]
 	elif (board[2] == board[5] and board[2] == board[8] and board[2] != ' '):
-		return True
+		return [2, 5, 8]
 	elif (board[3] == board[6] and board[3] == board[9] and board[3] != ' '):
-		return True
+		return [3, 6, 9]
 	elif (board[1] == board[5] and board[1] == board[9] and board[1] != ' '):
-		return True
+		return [1, 5, 9]
 	elif (board[7] == board[5] and board[7] == board[3] and board[7] != ' '):
-		return True
+		return [7, 5, 3]
 	else:
-		return False
+		return []
 
 def checkWhichMarkWon(mark):
 	if board[1] == board[2] and board[1] == board[3] and board[1] == mark:
@@ -118,7 +129,6 @@ def compMove():
 			if score > bestScore:
 				bestScore = score
 				bestMove = key
-
 	insertLetter(bot, bestMove)
 	return
 
@@ -126,9 +136,9 @@ def minimax(board, depth, isMaximizing):
 	global searches
 	searches += 1;
 	if checkWhichMarkWon(bot):
-		return 1
+		return 1-depth
 	elif checkWhichMarkWon(player):
-		return -1
+		return -1-depth
 	elif checkDraw():
 		return 0
 
@@ -205,6 +215,5 @@ title_label = tk.Label(window, text=f"{player_score} : {Bot_score}", font=("Helv
 title_label.pack(pady=20)
 title_d = tk.Label(window, text=f"Draws : {isdraw}", font=("Helvetica", 21))
 title_d.pack(pady=10)
-
 compMove()
 window.mainloop()
